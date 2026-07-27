@@ -17,6 +17,7 @@
     --accent2: #8c7b6a;
     --white: #fafaf8;
     --border: #d4cfc9;
+    --danger: #b3382c;
   }
 
   html { scroll-behavior: smooth; }
@@ -210,7 +211,6 @@
     display: block;
   }
   .work-card:hover img { transform: scale(1.06); }
-  /* overlay hint */
   .work-card::after {
     content: ''; position: absolute; inset: 0;
     background: rgba(0,0,0,0);
@@ -286,18 +286,45 @@
   .form-group input:focus,
   .form-group textarea:focus,
   .form-group select:focus { border-color: var(--dark); }
+  .form-group input.invalid,
+  .form-group textarea.invalid,
+  .form-group select.invalid { border-color: var(--danger); }
   .form-group textarea { resize: vertical; min-height: 100px; }
   .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  /* required-asterisk tooltip */
+  .req { color: var(--danger); margin-left: 3px; cursor: help; font-weight: 600; }
+
+  /* per-field error hint */
+  .field-error {
+    display: none;
+    font-size: 11px; color: var(--danger);
+    margin-top: 6px; letter-spacing: 0; text-transform: none;
+    font-weight: 400; line-height: 1.5;
+  }
+  .field-error.show { display: block; }
+
+  /* HONEYPOT — visually hidden, but reachable by dumb bots */
+  .hp-field {
+    position: absolute !important;
+    left: -10000px !important;
+    top: auto !important;
+    width: 1px !important; height: 1px !important;
+    overflow: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
 
   /* ── CHECKBOX ── */
   .form-group.form-checkbox { margin-bottom: 24px; margin-top: 4px; }
   .form-group.form-checkbox .checkbox-wrap {
-    display: flex; align-items: center; gap: 12px;
+    display: flex; align-items: flex-start; gap: 12px;
     cursor: pointer; user-select: none;
-    font-size: 13px; font-weight: 400;
+    font-size: 12px; font-weight: 400;
     letter-spacing: 0; text-transform: none;
-    color: var(--dark);
+    color: var(--mid);
     margin-bottom: 0;
+    line-height: 1.55;
   }
   .form-group.form-checkbox .checkbox-wrap input[type="checkbox"] {
     position: absolute; opacity: 0; pointer-events: none;
@@ -309,6 +336,7 @@
     background: var(--white);
     position: relative; flex-shrink: 0;
     transition: all 0.2s;
+    margin-top: 1px;
   }
   .checkbox-wrap:hover .checkbox-box { border-color: var(--dark); }
   .checkbox-wrap input[type="checkbox"]:checked + .checkbox-box {
@@ -323,7 +351,9 @@
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
   }
-  .checkbox-label { line-height: 1.4; }
+  .checkbox-wrap.invalid .checkbox-box { border-color: var(--danger); }
+  .checkbox-label a { color: var(--dark); text-decoration: underline; text-underline-offset: 2px; }
+  .checkbox-label a:hover { color: var(--accent2); }
 
   .btn-submit {
     width: 100%; padding: 18px;
@@ -332,12 +362,16 @@
     background: var(--dark); color: var(--white);
     border: none; cursor: pointer; margin-top: 8px; transition: all 0.25s;
   }
-  .btn-submit:hover { background: var(--accent2); }
+  .btn-submit:hover:not(:disabled) { background: var(--accent2); }
   .btn-submit:disabled { opacity: 0.6; cursor: default; }
   .form-success { display: none; text-align: center; padding: 40px 20px; color: var(--accent2); }
   .form-success .check { font-size: 40px; margin-bottom: 16px; }
   .form-success p { font-size: 14px; font-weight: 300; line-height: 1.8; }
-  .form-error { font-size: 11px; color: #b3382c; margin-top: -8px; margin-bottom: 16px; display: none; }
+  .form-error {
+    font-size: 11px; color: var(--danger);
+    margin-top: -8px; margin-bottom: 16px;
+    display: none; letter-spacing: 0; text-transform: none; font-weight: 400;
+  }
 
   /* ── FOOTER ── */
   footer {
@@ -345,12 +379,15 @@
     padding: 40px 80px;
     display: flex; justify-content: space-between; align-items: center;
     font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    flex-wrap: wrap; gap: 16px;
   }
   footer .footer-logo {
     font-family: 'Cormorant Garamond', serif;
     font-size: 22px; font-weight: 400; letter-spacing: 0.1em;
     color: var(--white); text-transform: none;
   }
+  footer a { color: #999; text-decoration: none; transition: color 0.2s; }
+  footer a:hover { color: var(--accent); }
 
   /* ── FLOATING CTA ── */
   .float-cta {
@@ -367,9 +404,7 @@
   .fade-up { opacity: 0; transform: translateY(30px); transition: opacity 0.7s ease, transform 0.7s ease; }
   .fade-up.visible { opacity: 1; transform: translateY(0); }
 
-  /* ══════════════════════════════════════
-     LIGHTBOX
-  ══════════════════════════════════════ */
+  /* ══ LIGHTBOX ══ */
   .lb-overlay {
     display: none;
     position: fixed; inset: 0; z-index: 500;
@@ -379,13 +414,11 @@
   }
   .lb-overlay.open { display: flex; }
   @keyframes lbFadeIn { from { opacity: 0; } to { opacity: 1; } }
-
   .lb-inner {
     position: relative;
     width: 100%; height: 100%;
     display: flex; align-items: center; justify-content: center;
   }
-
   .lb-img-wrap {
     max-width: min(90vw, 900px);
     max-height: 85vh;
@@ -402,7 +435,6 @@
     opacity: 0;
     transform: translateX(var(--lb-dir, 0px));
   }
-
   .lb-close {
     position: absolute; top: 24px; right: 32px;
     width: 44px; height: 44px;
@@ -412,7 +444,6 @@
     transition: background 0.2s, border-color 0.2s;
   }
   .lb-close:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.5); }
-
   .lb-arrow {
     position: absolute; top: 50%; transform: translateY(-50%);
     width: 52px; height: 52px;
@@ -425,13 +456,11 @@
   .lb-arrow:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.5); }
   .lb-arrow.prev { left: 24px; }
   .lb-arrow.next { right: 24px; }
-
   .lb-counter {
     position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
     font-size: 11px; font-weight: 500; letter-spacing: 0.2em;
     text-transform: uppercase; color: rgba(255,255,255,0.45);
   }
-
   .lb-thumbs {
     position: absolute; bottom: 56px; left: 50%; transform: translateX(-50%);
     display: flex; gap: 8px;
@@ -445,9 +474,7 @@
   }
   .lb-thumb.active { opacity: 1; border-color: var(--accent); }
 
-  /* ══════════════════════════════════════
-     PRICE MODAL (мини-форма "Узнать цену")
-  ══════════════════════════════════════ */
+  /* ══ PRICE MODAL ══ */
   .pm-overlay {
     display: none;
     position: fixed; inset: 0; z-index: 600;
@@ -455,6 +482,7 @@
     align-items: center; justify-content: center;
     padding: 20px;
     animation: lbFadeIn 0.2s ease;
+    overflow-y: auto;
   }
   .pm-overlay.open { display: flex; }
   .pm-box {
@@ -463,6 +491,7 @@
     padding: 40px 36px;
     position: relative;
     border: 1px solid var(--border);
+    margin: auto;
   }
   .pm-close {
     position: absolute; top: 16px; right: 16px;
@@ -489,10 +518,11 @@
     .services-grid { grid-template-columns: 1fr 1fr; }
     .works-grid { grid-template-columns: 1fr 1fr; }
     .contacts { grid-template-columns: 1fr; }
-    footer { flex-direction: column; gap: 16px; text-align: center; padding: 32px 24px; }
+    footer { flex-direction: column; gap: 12px; text-align: center; padding: 32px 24px; }
     .lb-arrow.prev { left: 8px; }
     .lb-arrow.next { right: 8px; }
     .form-row { grid-template-columns: 1fr; }
+    .form-section { padding: 40px 24px; }
   }
 </style>
 </head>
@@ -597,7 +627,7 @@
       <button class="btn-price" data-index="2">Узнать цену</button>
     </div>
     <div class="work-item fade-up">
-      <div class="work-card" data-index="3"><img src="4.jpg" alt="Работа 4"></div>
+      <div class="work-card" data-index="3"><img src="4.jpg" alt="Работа 3"></div>
       <button class="btn-price" data-index="3">Узнать цену</button>
     </div>
     <div class="work-item fade-up">
@@ -649,23 +679,40 @@
     <h2 class="section-title fade-up">Свяжитесь<br>с <em>нами</em></h2>
     <div class="contact-items">
       <div class="contact-item fade-up"><div class="contact-label">Телефон</div><a href="tel:+79252708910" class="contact-value">+7 (925) 270-89-10</a></div>
-      <div class="contact-item fade-up"><div class="contact-label">Telegram</div><a href="https://t.me/liveislove" target="_blank" class="contact-value">@liveislove</a></div>
-      <div class="contact-item fade-up"><div class="contact-label">Сайт</div><a href="https://fanya-clothes.ru" target="_blank" class="contact-value">fanya-clothes.ru</a></div>
+      <div class="contact-item fade-up"><div class="contact-label">Telegram</div><a href="https://t.me/liveislove" target="_blank" rel="noopener" class="contact-value">@liveislove</a></div>
+      <div class="contact-item fade-up"><div class="contact-label">Сайт</div><a href="https://fanya-clothes.ru" target="_blank" rel="noopener" class="contact-value">fanya-clothes.ru</a></div>
       <div class="contact-item fade-up"><div class="contact-label">Адрес производства</div><span class="contact-value">г. Люберцы,<br>ул. Транспортная 6Б</span></div>
     </div>
   </div>
+
   <div id="order" class="form-section fade-up">
     <div class="form-title">Оставить заявку</div>
     <p class="form-sub">Расскажите о вашем проекте — мы свяжемся в течение одного рабочего дня и обсудим детали.</p>
-    <div id="order-form">
-      <div class="form-row">
-        <div class="form-group"><label>Имя *</label><input type="text" id="f-name" placeholder="Ваше имя"></div>
-        <div class="form-group"><label>Телефон / Telegram *</label><input type="text" id="f-phone" placeholder="+7 или @username"></div>
+
+    <form id="order-form" novalidate autocomplete="on">
+      <!-- HONEYPOT: скрытое поле, невидимое человеку, но заполняемое ботами. Реальные заявки должны оставлять его пустым. -->
+      <div class="hp-field" aria-hidden="true">
+        <label for="f-website">Сайт (не заполнять)</label>
+        <input type="text" id="f-website" name="website" tabindex="-1" autocomplete="off">
       </div>
+
       <div class="form-row">
         <div class="form-group">
-          <label>Тип изделия</label>
-          <select id="f-type">
+          <label for="f-name">Имя<span class="req" title="Обязательное поле">*</span></label>
+          <input type="text" id="f-name" name="name" maxlength="80" required aria-required="true" placeholder="Ваше имя">
+          <div class="field-error" data-for="f-name"></div>
+        </div>
+        <div class="form-group">
+          <label for="f-phone">Телефон / Telegram<span class="req" title="Обязательное поле">*</span></label>
+          <input type="text" id="f-phone" name="phone" maxlength="60" required aria-required="true" placeholder="+7 или @username">
+          <div class="field-error" data-for="f-phone"></div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="f-type">Тип изделия</label>
+          <select id="f-type" name="type">
             <option value="">Выберите...</option>
             <option>Футболки / лонгсливы</option>
             <option>Худи / свитшоты</option>
@@ -677,31 +724,51 @@
           </select>
         </div>
         <div class="form-group">
-          <label>Наименование изделия</label>
-          <input type="text" id="f-item-name" placeholder="Например, худи оверсайз с капюшоном">
+          <label for="f-item-name">Наименование изделия</label>
+          <input type="text" id="f-item-name" name="item_name" maxlength="150" placeholder="Например, худи оверсайз с капюшоном">
         </div>
       </div>
+
       <div class="form-row">
         <div class="form-group">
-          <label>Количество единиц</label>
-          <input type="text" id="f-qty" inputmode="numeric" placeholder="Например, 150">
+          <label for="f-qty">Количество единиц</label>
+          <input type="text" id="f-qty" name="quantity" maxlength="30" inputmode="numeric" placeholder="Например, 150">
         </div>
         <div class="form-group">
-          <label>Материал</label>
-          <input type="text" id="f-material" placeholder="Например, футер 3-нитка">
+          <label for="f-material">Материал</label>
+          <input type="text" id="f-material" name="material" maxlength="120" placeholder="Например, футер 3-нитка">
         </div>
       </div>
+
       <div class="form-group form-checkbox">
         <label class="checkbox-wrap">
-          <input type="checkbox" id="f-patterns">
+          <input type="checkbox" id="f-patterns" name="has_patterns">
           <span class="checkbox-box"></span>
           <span class="checkbox-label">Есть готовые лекала</span>
         </label>
       </div>
-      <div class="form-group"><label>Комментарий к заказу</label><textarea id="f-msg" placeholder="Расскажите подробнее о вашем проекте, есть ли образцы, референсы..."></textarea></div>
-      <p class="form-error" id="f-error">Пожалуйста, укажите имя и контакт для связи.</p>
-      <button class="btn-submit" id="f-submit" onclick="submitForm()">Отправить заявку →</button>
-    </div>
+
+      <div class="form-group">
+        <label for="f-msg">Комментарий к заказу</label>
+        <textarea id="f-msg" name="message" maxlength="1500" placeholder="Расскажите подробнее о вашем проекте, есть ли образцы, референсы..."></textarea>
+      </div>
+
+      <div class="form-group form-checkbox">
+        <label class="checkbox-wrap" id="f-consent-wrap">
+          <input type="checkbox" id="f-consent" name="consent" required aria-required="true">
+          <span class="checkbox-box"></span>
+          <span class="checkbox-label">
+            Я согласен на обработку персональных данных и ознакомлен с
+            <a href="privacy.html" target="_blank" rel="noopener">политикой конфиденциальности</a><span class="req" title="Обязательно">*</span>
+          </span>
+        </label>
+        <div class="field-error" data-for="f-consent"></div>
+      </div>
+
+      <p class="form-error" id="f-error">Пожалуйста, проверьте заполненные поля.</p>
+      <button class="btn-submit" id="f-submit" type="submit">Отправить заявку →</button>
+    </form>
+
     <div class="form-success" id="form-success">
       <div class="check">✓</div>
       <p>Спасибо! Ваша заявка принята.<br>Мы свяжемся с вами в ближайшее время.</p>
@@ -711,14 +778,15 @@
 
 <footer>
   <span class="footer-logo">Fanya</span>
-  <span>© 2024 Fanya Manufacture. Производство одежды.</span>
+  <span>© 2024 Fanya Manufacture</span>
+  <span><a href="privacy.html">Политика конфиденциальности</a></span>
   <span>Люберцы, Транспортная 6Б</span>
 </footer>
 
 <a href="#order" class="float-cta">Заказать →</a>
 
 <!-- ══ LIGHTBOX ══ -->
-<div class="lb-overlay" id="lb">
+<div class="lb-overlay" id="lb" role="dialog" aria-modal="true" aria-label="Просмотр работы">
   <div class="lb-inner">
     <button class="lb-close" id="lb-close" aria-label="Закрыть">×</button>
     <button class="lb-arrow prev" id="lb-prev" aria-label="Назад">&#8592;</button>
@@ -732,7 +800,7 @@
 </div>
 
 <!-- ══ PRICE MODAL ══ -->
-<div class="pm-overlay" id="pm">
+<div class="pm-overlay" id="pm" role="dialog" aria-modal="true" aria-label="Узнать цену">
   <div class="pm-box">
     <button class="pm-close" id="pm-close" aria-label="Закрыть">×</button>
     <div class="pm-title">Узнать цену</div>
@@ -741,10 +809,40 @@
       <img id="pm-thumb" src="" alt="">
       <span id="pm-label">Работа</span>
     </div>
-    <div class="form-group"><label>Имя *</label><input type="text" id="pm-name" placeholder="Ваше имя"></div>
-    <div class="form-group"><label>Телефон / Telegram *</label><input type="text" id="pm-phone" placeholder="+7 или @username"></div>
-    <p class="form-error" id="pm-error">Пожалуйста, укажите имя и контакт для связи.</p>
-    <button class="btn-submit" id="pm-submit" onclick="submitPriceForm()">Узнать цену →</button>
+
+    <form id="pm-form" novalidate>
+      <div class="hp-field" aria-hidden="true">
+        <label for="pm-website">Сайт (не заполнять)</label>
+        <input type="text" id="pm-website" name="website" tabindex="-1" autocomplete="off">
+      </div>
+
+      <div class="form-group">
+        <label for="pm-name">Имя<span class="req" title="Обязательное поле">*</span></label>
+        <input type="text" id="pm-name" name="name" maxlength="80" required aria-required="true" placeholder="Ваше имя">
+        <div class="field-error" data-for="pm-name"></div>
+      </div>
+      <div class="form-group">
+        <label for="pm-phone">Телефон / Telegram<span class="req" title="Обязательное поле">*</span></label>
+        <input type="text" id="pm-phone" name="phone" maxlength="60" required aria-required="true" placeholder="+7 или @username">
+        <div class="field-error" data-for="pm-phone"></div>
+      </div>
+
+      <div class="form-group form-checkbox">
+        <label class="checkbox-wrap" id="pm-consent-wrap">
+          <input type="checkbox" id="pm-consent" name="consent" required aria-required="true">
+          <span class="checkbox-box"></span>
+          <span class="checkbox-label">
+            Я согласен на обработку персональных данных
+            <a href="privacy.html" target="_blank" rel="noopener">(политика)</a><span class="req" title="Обязательно">*</span>
+          </span>
+        </label>
+        <div class="field-error" data-for="pm-consent"></div>
+      </div>
+
+      <p class="form-error" id="pm-error">Пожалуйста, проверьте заполненные поля.</p>
+      <button class="btn-submit" id="pm-submit" type="submit">Узнать цену →</button>
+    </form>
+
     <div class="form-success" id="pm-success">
       <div class="check">✓</div>
       <p>Спасибо! Мы пришлём расчёт стоимости в ближайшее время.</p>
@@ -753,6 +851,47 @@
 </div>
 
 <script>
+  // ══ Момент загрузки страницы — для timing-guard'а ══
+  const PAGE_LOADED_AT = Date.now();
+  const MIN_HUMAN_INTERACTION_MS = 2500;  // меньше — почти наверняка бот
+  const CLIENT_COOLDOWN_MS = 5000;         // задержка между отправками
+  let lastSubmitAt = 0;
+
+  // ══ Валидация ══
+  // Телефон: цифры (можно + ( ) - пробел), 9-20 символов
+  // Или Telegram: @ + латиница/цифры/подчёркивания, 5-32 символа
+  const RE_PHONE_OR_TG = /^(\+?[\d][\d\s()\-]{8,30}|@[a-zA-Z0-9_]{4,32})$/;
+  const RE_NAME = /^[\p{L}\p{M}\s\-'.]{2,80}$/u;
+
+  function showFieldError(inputId, msg) {
+    const input = document.getElementById(inputId);
+    if (input) input.classList.add('invalid');
+    const err = document.querySelector(`.field-error[data-for="${inputId}"]`);
+    if (err) { err.textContent = msg; err.classList.add('show'); }
+  }
+  function clearFieldError(inputId) {
+    const input = document.getElementById(inputId);
+    if (input) input.classList.remove('invalid');
+    const err = document.querySelector(`.field-error[data-for="${inputId}"]`);
+    if (err) { err.textContent = ''; err.classList.remove('show'); }
+  }
+  function clearAllFieldErrors(scope) {
+    scope.querySelectorAll('.field-error').forEach(e => { e.textContent = ''; e.classList.remove('show'); });
+    scope.querySelectorAll('.invalid').forEach(e => e.classList.remove('invalid'));
+  }
+
+  // Снимаем ошибку сразу при вводе в поле
+  document.querySelectorAll('input, textarea, select').forEach(el => {
+    el.addEventListener('input', () => {
+      if (el.id) clearFieldError(el.id);
+      const generalErr = el.closest('form')?.querySelector('.form-error');
+      if (generalErr) generalErr.style.display = 'none';
+    });
+    el.addEventListener('change', () => {
+      if (el.id) clearFieldError(el.id);
+    });
+  });
+
   // ── Fade-up observer ──
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry, i) => {
@@ -773,9 +912,7 @@
   }, { threshold: 0.3 });
   formObserver.observe(formSection);
 
-  // ══════════════════════════════════════
-  //  ОТПРАВКА В TELEGRAM-БОТА (Yandex Cloud Function)
-  // ══════════════════════════════════════
+  // ══ Отправка в Yandex Cloud Function ══
   const FUNCTION_URL = 'https://functions.yandexcloud.net/d4e8ni8sl28ue1jnptb6';
 
   async function sendToBot(payload) {
@@ -784,13 +921,33 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok || data.ok === false) throw new Error('send failed');
+    let data = {};
+    try { data = await res.json(); } catch (_) {}
+    if (!res.ok || data.ok === false) {
+      const err = new Error(data.error || 'send failed');
+      err.status = res.status;
+      err.code = data.code;
+      throw err;
+    }
     return data;
   }
 
-  // ── Главная форма заявки ──
-  async function submitForm() {
+  // ══ Главная форма заявки ══
+  const orderForm = document.getElementById('order-form');
+  orderForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    await submitOrderForm();
+  });
+
+  async function submitOrderForm() {
+    const now = Date.now();
+    if (now - lastSubmitAt < CLIENT_COOLDOWN_MS) return; // клиентский антифлуд
+
+    const form = orderForm;
+    clearAllFieldErrors(form);
+    const generalErr = document.getElementById('f-error');
+    generalErr.style.display = 'none';
+
     const name        = document.getElementById('f-name').value.trim();
     const phone       = document.getElementById('f-phone').value.trim();
     const type        = document.getElementById('f-type').value;
@@ -799,13 +956,44 @@
     const material    = document.getElementById('f-material').value.trim();
     const hasPatterns = document.getElementById('f-patterns').checked;
     const msg         = document.getElementById('f-msg').value.trim();
-    const errEl = document.getElementById('f-error');
-    const btn   = document.getElementById('f-submit');
+    const consent     = document.getElementById('f-consent').checked;
+    const honeypot    = document.getElementById('f-website').value;
 
-    if (!name || !phone) { errEl.style.display = 'block'; return; }
-    errEl.style.display = 'none';
+    // ── валидация ──
+    let ok = true;
+    if (name.length < 2 || name.length > 80 || !RE_NAME.test(name)) {
+      showFieldError('f-name', 'Укажите имя (только буквы, 2–80 символов).'); ok = false;
+    }
+    if (!RE_PHONE_OR_TG.test(phone)) {
+      showFieldError('f-phone', 'Формат: +7 999 123-45-67 или @username.'); ok = false;
+    }
+    if (!consent) {
+      document.getElementById('f-consent-wrap').classList.add('invalid');
+      showFieldError('f-consent', 'Необходимо согласие на обработку персональных данных.'); ok = false;
+    } else {
+      document.getElementById('f-consent-wrap').classList.remove('invalid');
+    }
 
+    if (!ok) { generalErr.style.display = 'block'; return; }
+
+    // Honeypot — не должно быть заполнено
+    if (honeypot) {
+      // Тихо «принимаем», ничего не отправляя. Пусть бот думает, что успех.
+      showSuccessOrder();
+      return;
+    }
+
+    // Timing-guard
+    const formOpenMs = now - PAGE_LOADED_AT;
+    if (formOpenMs < MIN_HUMAN_INTERACTION_MS) {
+      showSuccessOrder(); // тоже тихо
+      return;
+    }
+
+    const btn = document.getElementById('f-submit');
     btn.disabled = true; btn.textContent = 'Отправляю...';
+    lastSubmitAt = now;
+
     try {
       await sendToBot({
         name, phone,
@@ -815,15 +1003,26 @@
         material: material || '—',
         has_patterns: hasPatterns,
         message: msg || '—',
+        consent: true,
+        website: honeypot,          // сервер тоже проверит
+        form_open_ms: formOpenMs,   // сервер тоже проверит
         source: 'Заявка с сайта'
       });
-      document.getElementById('order-form').style.display = 'none';
-      document.getElementById('form-success').style.display = 'block';
-    } catch (e) {
+      showSuccessOrder();
+    } catch (err) {
       btn.disabled = false; btn.textContent = 'Отправить заявку →';
-      errEl.textContent = 'Не удалось отправить. Попробуйте ещё раз или напишите в Telegram @liveislove.';
-      errEl.style.display = 'block';
+      if (err.status === 429) {
+        generalErr.textContent = 'Слишком много заявок. Попробуйте через минуту или напишите @liveislove.';
+      } else {
+        generalErr.textContent = 'Не удалось отправить. Попробуйте ещё раз или напишите в Telegram @liveislove.';
+      }
+      generalErr.style.display = 'block';
     }
+  }
+
+  function showSuccessOrder() {
+    orderForm.style.display = 'none';
+    document.getElementById('form-success').style.display = 'block';
   }
 
   // ══════════════════════════════════════
@@ -861,33 +1060,26 @@
       t.classList.toggle('active', i === currentIndex);
     });
   }
-
   function updateCounter() {
     lbCounter.textContent = (currentIndex + 1) + ' / ' + IMAGES.length;
   }
-
   function goTo(index, dir = 0) {
     if (index === currentIndex && lb.classList.contains('open')) return;
     const outDir = dir > 0 ? '-60px' : dir < 0 ? '60px' : '0px';
     const inDir  = dir > 0 ? '60px'  : dir < 0 ? '-60px' : '0px';
-
     lbImg.style.setProperty('--lb-dir', outDir);
     lbImg.classList.add('lb-animating');
-
     setTimeout(() => {
       currentIndex = (index + IMAGES.length) % IMAGES.length;
       lbImg.src = IMAGES[currentIndex].src;
       lbImg.alt = IMAGES[currentIndex].alt;
       lbImg.style.setProperty('--lb-dir', inDir);
-
       lbImg.getBoundingClientRect();
       lbImg.classList.remove('lb-animating');
-
       updateCounter();
       updateThumbs();
     }, 180);
   }
-
   function openLightbox(index) {
     currentIndex = index;
     lbImg.src = IMAGES[currentIndex].src;
@@ -898,20 +1090,16 @@
     updateCounter();
     updateThumbs();
   }
-
   function closeLightbox() {
     lb.classList.remove('open');
     document.body.style.overflow = '';
   }
-
   document.querySelectorAll('.work-card').forEach(card => {
     card.addEventListener('click', () => openLightbox(+card.dataset.index));
   });
-
   document.getElementById('lb-close').addEventListener('click', closeLightbox);
   document.getElementById('lb-prev').addEventListener('click', () => goTo(currentIndex - 1, -1));
   document.getElementById('lb-next').addEventListener('click', () => goTo(currentIndex + 1, 1));
-
   lb.addEventListener('click', e => { if (e.target === lb || e.target === lb.querySelector('.lb-inner')) closeLightbox(); });
 
   document.addEventListener('keydown', e => {
@@ -931,30 +1119,30 @@
   });
 
   // ══════════════════════════════════════
-  //  PRICE MODAL ("Узнать цену")
+  //  PRICE MODAL
   // ══════════════════════════════════════
   const pm       = document.getElementById('pm');
   const pmThumb  = document.getElementById('pm-thumb');
   const pmLabel  = document.getElementById('pm-label');
+  const pmForm   = document.getElementById('pm-form');
   let pmIndex = 0;
+  let pmOpenedAt = 0;
 
   function openPriceModal(index) {
     pmIndex = index;
+    pmOpenedAt = Date.now();
     pmThumb.src = IMAGES[index].src;
     pmThumb.alt = IMAGES[index].alt;
     pmLabel.textContent = IMAGES[index].alt;
-    document.getElementById('pm-name').value = '';
-    document.getElementById('pm-phone').value = '';
+    pmForm.reset();
+    clearAllFieldErrors(pmForm);
     document.getElementById('pm-error').style.display = 'none';
-    document.getElementById('pm-name').closest('.form-group').parentElement.querySelectorAll('.form-group').forEach(g => g.style.display = '');
-    document.getElementById('pm-submit').style.display = '';
-    document.getElementById('pm-submit').disabled = false;
-    document.getElementById('pm-submit').textContent = 'Узнать цену →';
+    pmForm.style.display = '';
     document.getElementById('pm-success').style.display = 'none';
     pm.classList.add('open');
     document.body.style.overflow = 'hidden';
+    setTimeout(() => document.getElementById('pm-name').focus(), 100);
   }
-
   function closePriceModal() {
     pm.classList.remove('open');
     document.body.style.overflow = '';
@@ -966,35 +1154,76 @@
       openPriceModal(+btn.dataset.index);
     });
   });
-
   document.getElementById('pm-close').addEventListener('click', closePriceModal);
   pm.addEventListener('click', e => { if (e.target === pm) closePriceModal(); });
 
+  pmForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    await submitPriceForm();
+  });
+
   async function submitPriceForm() {
-    const name  = document.getElementById('pm-name').value.trim();
-    const phone = document.getElementById('pm-phone').value.trim();
-    const errEl = document.getElementById('pm-error');
-    const btn   = document.getElementById('pm-submit');
+    const now = Date.now();
+    if (now - lastSubmitAt < CLIENT_COOLDOWN_MS) return;
 
-    if (!name || !phone) { errEl.style.display = 'block'; return; }
-    errEl.style.display = 'none';
+    clearAllFieldErrors(pmForm);
+    const generalErr = document.getElementById('pm-error');
+    generalErr.style.display = 'none';
 
+    const name    = document.getElementById('pm-name').value.trim();
+    const phone   = document.getElementById('pm-phone').value.trim();
+    const consent = document.getElementById('pm-consent').checked;
+    const honeypot = document.getElementById('pm-website').value;
+
+    let ok = true;
+    if (name.length < 2 || name.length > 80 || !RE_NAME.test(name)) {
+      showFieldError('pm-name', 'Укажите имя (2–80 символов).'); ok = false;
+    }
+    if (!RE_PHONE_OR_TG.test(phone)) {
+      showFieldError('pm-phone', 'Формат: +7 999 123-45-67 или @username.'); ok = false;
+    }
+    if (!consent) {
+      document.getElementById('pm-consent-wrap').classList.add('invalid');
+      showFieldError('pm-consent', 'Необходимо согласие на обработку персональных данных.'); ok = false;
+    } else {
+      document.getElementById('pm-consent-wrap').classList.remove('invalid');
+    }
+    if (!ok) { generalErr.style.display = 'block'; return; }
+
+    if (honeypot) { showSuccessPrice(); return; }
+
+    const formOpenMs = now - pmOpenedAt;
+    if (formOpenMs < MIN_HUMAN_INTERACTION_MS) { showSuccessPrice(); return; }
+
+    const btn = document.getElementById('pm-submit');
     btn.disabled = true; btn.textContent = 'Отправляю...';
+    lastSubmitAt = now;
+
     try {
       await sendToBot({
         name, phone,
         work: IMAGES[pmIndex].alt,
         image: SITE_BASE + IMAGES[pmIndex].src,
+        consent: true,
+        website: honeypot,
+        form_open_ms: formOpenMs,
         source: 'Узнать цену (портфолио)'
       });
-      document.querySelectorAll('#pm .form-group').forEach(g => g.style.display = 'none');
-      btn.style.display = 'none';
-      document.getElementById('pm-success').style.display = 'block';
-    } catch (e) {
+      showSuccessPrice();
+    } catch (err) {
       btn.disabled = false; btn.textContent = 'Узнать цену →';
-      errEl.textContent = 'Не удалось отправить. Попробуйте ещё раз или напишите в Telegram @liveislove.';
-      errEl.style.display = 'block';
+      if (err.status === 429) {
+        generalErr.textContent = 'Слишком много заявок. Попробуйте через минуту.';
+      } else {
+        generalErr.textContent = 'Не удалось отправить. Попробуйте ещё раз или напишите @liveislove.';
+      }
+      generalErr.style.display = 'block';
     }
+  }
+
+  function showSuccessPrice() {
+    pmForm.style.display = 'none';
+    document.getElementById('pm-success').style.display = 'block';
   }
 </script>
 </body>
